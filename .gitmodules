@@ -1,3 +1,6 @@
 [submodule "dns"]
 	path = dns
 	url = git@github.com:quakecon/dns
+[submodule "dhcp"]
+	path = dhcp
+	url = git@github.com:quakecon/dhcp.git
