@@ -23,13 +23,14 @@ function master_auth_ns {
 	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy-in ../dns/secret.keys:/etc/nsd \
 	 --run-command "chgrp -R qcadmin /home/qcadmin/dns" \
-	 --run-command "chmod -R g+w /etc/qcadmin/dns" \
-	 --run-command "chgrp -R qcadmin /etc/nsd" \
-	 --run-command "chmod -R g+w /etc/nsd" \
-	 --copy /qcadmin/dns/zones:/etc/nsd \
-	 --copy /qcadmin/dns/nsd.conf.master:/etc/nsd \
+	 --run-command "chmod -R g+w /home/qcadmin/dns" \
+	 --copy /home/qcadmin/dns/zones:/etc/nsd \
+	 --copy /home/qcadmin/dns/nsd.conf.master:/etc/nsd \
 	 --move /etc/nsd/nsd.conf.master:/etc/nsd/nsd.conf \
 	 --run-command "nsd-control-setup" \
+	 --run-command "chgrp -R qcadmin /etc/nsd" \
+	 --run-command "chmod -R g+w /etc/nsd/zones" \
+	 --run-command "chmod -R g+w /etc/nsd/nsd.conf" \
 	 --run-command "systemctl enable nsd.service" \
 	 "${@:3}"
 }
@@ -44,6 +45,10 @@ function slave_recurse_ns {
 	 --move /etc/nsd/nsd.conf.slave:/etc/nsd/nsd.conf \
 	 --run-command "nsd-control-setup" \
 	 --run-command "unbound-control-setup" \
+	 --run-command "chgrp -R qcadmin /etc/nsd" \
+	 --run-command "chgrp -R qcadmin /etc/unbound" \
+	 --run-command "chmod g+w /etc/nsd/nsd.conf" \
+	 --run-command "chmod g+w /etc/unbound/unbound.conf" \
 	 --run-command "systemctl enable nsd.service" \
 	 --run-command "systemctl enable unbound.service" \
 	 "${@:3}"
@@ -53,12 +58,14 @@ function slave_recurse_ns {
 #      --install "dhcpd,git"
 
 if [ $# -eq 0 ]; then
+    ssh-keygen -N "" -f id_rsa
+    cat id_rsa.pub authorized_keys.template > authorized_keys
     dns/scripts/gen-secret.sh dns/secret.keys.template > dns/secret.keys
     master_auth_ns ns $IP_NS
     slave_recurse_ns ns1 $IP_NS1
     slave_recurse_ns ns2 $IP_NS2
     slave_recurse_ns ns3 $IP_NS3
 else
-    $1
+    $@
 fi
 

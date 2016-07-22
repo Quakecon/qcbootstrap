@@ -31,6 +31,7 @@ function base () {
 		  --run-command \
 		  "useradd -m -p '${QCADMINPW}' -s /bin/bash qcadmin" \
 		  --ssh-inject qcadmin:file:$OLDPWD/authorized_keys \
+		  --copy-in ../id_rsa:/home/qcadmin/.ssh \
 		  --run-command 'chown -R qcadmin:qcadmin /home/qcadmin/.ssh' \
 		  --run-command 'echo "qcadmin ALL=(ALL) ALL" >> /etc/sudoers' \
 		  --run-command 'echo GRUB_CMDLINE_LINUX_DEFAULT="console=tty0" >> /etc/default/grub' \
