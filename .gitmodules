@@ -1,0 +1,3 @@
+[submodule "dns"]
+	path = dns
+	url = git@github.com:quakecon/dns
