@@ -18,9 +18,8 @@ IP_DHCP2=172.16.1.175
 
 function core {
     base "$1" "$2" \
-	 --install "nsd,git,dnsutils,unbound,dhcpd" \
+	 --install "nsd,git,dnsutils,unbound,isc-dhcp-server" \
 	 --run-command "git clone https://github.com/Quakecon/dns.git /home/qcadmin/dns" \
-	 --run-command "git clone https://github.com/Quakecon/dhcp.git /home/qcadmin/dhcp" \
 	 --copy /home/qcadmin/dns/scripts/pre-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy-in ../dns/secret.keys:/etc/nsd \
@@ -32,8 +31,19 @@ function core {
 	 --run-command "nsd-control-setup" \
 	 --run-command "chgrp -R qcadmin /etc/nsd" \
 	 --run-command "chmod -R g+w /etc/nsd/zones" \
-	 --run-command "chmod -R g+w /etc/nsd/nsd.conf" \
+	 --run-command "chmod g+w /etc/nsd/nsd.conf" \
 	 --run-command "systemctl enable nsd.service" \
+	 --run-command "git clone https://github.com/Quakecon/dhcp.git /home/qcadmin/dhcp" \
+	 --copy /home/qcadmin/dhcp/scripts/pre-commit:/home/qcadmin/dhcp/.git/hooks \
+	 --copy /home/qcadmin/dhcp/scripts/post-commit:/home/qcadmin/dhcp/.git/hooks \
+	 --run-command "chgrp -R qcadmin /home/qcadmin/dhcp" \
+	 --run-command "chmod -R g+w /home/qcadmin/dhcp" \
+	 --run-command "cp /home/qcadmin/dhcp/*.conf* /etc/dhcp" \
+	 --move /etc/dhcp/dhcpd.conf.${1}:/etc/dhcp/dhcpd.conf \
+	 --run-command "chgrp -R qcadmin /etc/dhcp" \
+	 --run-command "systemctl enable isc-dhcp-server.service" \
+	 --run-command "chmod -R g+w /etc/dhcp" \
+	 --copy /home/qcadmin/dhcp/isc-dhcp-server.service:/etc/systemd/system \
 	 "${@:3}"
 }
 

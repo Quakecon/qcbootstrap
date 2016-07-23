@@ -28,12 +28,12 @@ function base () {
 		  --timezone "America/Chicago" \
 		  --update \
 		  --root-password disabled \
-		  --run-command \
-		  "useradd -m -p '${QCADMINPW}' -s /bin/bash qcadmin" \
+		  --run-command "useradd -m -p '${QCADMINPW}' -s /bin/bash qcadmin" \
 		  --ssh-inject qcadmin:file:$OLDPWD/authorized_keys \
 		  --copy-in ../id_rsa:/home/qcadmin/.ssh \
 		  --run-command 'chown -R qcadmin:qcadmin /home/qcadmin/.ssh' \
 		  --run-command 'echo "qcadmin ALL=(ALL) ALL" >> /etc/sudoers' \
+		  --run-command 'echo "qcadmin ALL=(root) NOPASSWD: /bin/systemctl" >> /etc/sudoers' \
 		  --run-command 'echo GRUB_CMDLINE_LINUX_DEFAULT="console=tty0" >> /etc/default/grub' \
 		  --run-command 'update-grub' \
 		  --write "/etc/network/interfaces:
@@ -44,7 +44,7 @@ auto ens3
 iface ens3 inet static
     address ${IPADDRESS}/24
     gateway 172.16.1.1
-    dns-nameservers 8.8.8.8 8.8.4.4
+    dns-nameservers 172.16.1.102 172.16.1.103 172.16.1.104 8.8.8.8
     dns-search at.quakecon.org
 " \
 		  "${@:3}"
