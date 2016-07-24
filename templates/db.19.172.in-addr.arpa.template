@@ -1,0 +1,15 @@
+$TTL 1800
+@       IN      SOA     ns.at.quakecon.org. domain.quakecon.org. (
+                     {{ serial }}       ; Serial
+                           1200         ; Refresh
+                            180         ; Retry
+                        2419200         ; Expire
+                          10800 )       ; Negative Cache TTL
+;
+        IN      NS      core1.at.quakecon.org.
+        IN      NS      core2.at.quakecon.org.
+
+{% for switch in switches %}
+2.{{ loop.index }}     IN      PTR     sw.{{ name }}.byoc.at.quakecon.org.
+{% endfor %}
+
