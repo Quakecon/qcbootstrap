@@ -80,6 +80,8 @@ function recursive_ns {
 	 --run-command "chgrp -R qcadmin /etc/unbound" \
 	 --run-command "chmod g+w /etc/unbound/unbound.conf" \
 	 --run-command "systemctl enable unbound.service" \
+	 --run-command 'echo "net.core.rmem_max=4194304" >> /etc/sysctl.conf' \
+	 --run-command 'echo "net.core.wmem_max=4194304" >> /etc/sysctl.conf' \
 	 "${@:3}"
 }
 
