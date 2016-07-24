@@ -24,7 +24,7 @@ function base () {
 		  --cache $CACHEDIR \
 		  --arch $ARCH \
 		  --hostname ${HOSTNAME}.at.quakecon.org \
-		  --install "vim,iputils-ping,iputils-tracepath,openssh-client" \
+		  --install "openntpd,vim,iputils-ping,iputils-tracepath,openssh-client" \
 		  --timezone "America/Chicago" \
 		  --update \
 		  --root-password disabled \
@@ -34,6 +34,7 @@ function base () {
 		  --run-command 'chown -R qcadmin:qcadmin /home/qcadmin/.ssh' \
 		  --run-command 'echo "qcadmin ALL=(ALL) ALL" >> /etc/sudoers' \
 		  --run-command 'echo "qcadmin ALL=(root) NOPASSWD: /bin/systemctl" >> /etc/sudoers' \
+		  --run-command 'echo "qcadmin ALL=(root) NOPASSWD: /bin/journalctl" >> /etc/sudoers' \
 		  --run-command 'echo GRUB_CMDLINE_LINUX_DEFAULT="console=tty0" >> /etc/default/grub' \
 		  --run-command 'update-grub' \
 		  --write "/etc/network/interfaces:
@@ -47,6 +48,13 @@ iface ens3 inet static
     dns-nameservers 172.16.1.102 172.16.1.103 172.16.1.104 8.8.8.8
     dns-search at.quakecon.org
 " \
+		  --run-command "systemctl enable openntpd" \
+		  --run-command 'cat <<EOF > /etc/openntpd/ntpd.conf
+servers 172.16.1.100
+servers 172.16.1.101
+constraints from "https://www.google.com/"
+EOF
+' \
 		  "${@:3}"
      
      cd $OLDPWD)
