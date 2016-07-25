@@ -9,7 +9,6 @@ OUTDIR=$PWD/images
 IMGFORMAT=raw
 SIZE=50G
 QCADMINPW='$1$04tl7iXr$RrbXcWpFW5lAP4cGTIWTI/'
-http_proxy="http://172.16.1.1:3128"
 
 function base () {
     HOSTNAME=$1
