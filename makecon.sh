@@ -10,8 +10,6 @@ IP_CORE2=172.16.1.101
 IP_NS1=172.16.1.102
 IP_NS2=172.16.1.103
 IP_NS3=172.16.1.104
-IP_DHCP1=172.16.1.174
-IP_DHCP2=172.16.1.175
 
 # Note: base changes director to IMGDIR, so local paths must be
 # absolute or relative to IMGDIR

@@ -15,8 +15,6 @@ function base () {
     HOSTNAME=$1
     IPADDRESS=$2
     (cd $OUTDIR;
-     touch ${HOSTNAME}.img
-     chattr +C ${HOSTNAME}.img
      virt-builder ubuntu-16.04 \
 		  --size $SIZE \
 		  --output ${HOSTNAME}.img \
