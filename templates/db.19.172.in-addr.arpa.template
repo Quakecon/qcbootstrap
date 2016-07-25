@@ -9,7 +9,7 @@ $TTL 1800
         IN      NS      core1.at.quakecon.org.
         IN      NS      core2.at.quakecon.org.
 
-{% for switch in switches %}
-2.{{ loop.index }}     IN      PTR     sw.{{ name }}.byoc.at.quakecon.org.
-{% endfor %}
+{%- for table in tables %}
+2.{{ loop.index }}     IN      PTR     sw-{{ table.name }}.byoc.at.quakecon.org.
+{%- endfor %}
 

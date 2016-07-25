@@ -1,12 +1,12 @@
-{% for switch in switches %}
-subnet {{ subnet }}
- netmask {{ netmask }} {
-   option subnet-mask {{ netmask }};
-   option routers {{ router }};
+{% for t in tables %}
+subnet {{ t.subnet }}
+ netmask {{ t.netmask }} {
+   option subnet-mask {{ t.netmask }};
+   option routers {{ t.router }};
    option domain-name-servers 172.16.1.102, 172.16.1.103, 172.16.1.104;
    pool {
       failover peer "dhcp-failover";
-      range {{ range_first }} {{ range_last }};
+      range {{ t.range_first }} {{ t.range_last }};
    }
 }
 {% endfor %}
