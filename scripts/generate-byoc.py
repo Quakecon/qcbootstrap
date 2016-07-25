@@ -28,9 +28,8 @@ class Table:
 
 def table_name_filter(name):
     match = NAME_FILTER.search(name.lower())
-    if match:
-        return match.group()
-    return None
+    assert match, "No valid table name found in: {}".format(name)
+    return match.group()
 
 def bits_to_mask(mask):
     maskint = 0
@@ -50,9 +49,9 @@ def incr_ip(ip_str, num=1):
 
 if __name__ == "__main__":
     TABLES = []
-    CURRENT_TABLE = None
     if len(sys.argv) != 3:
-        print("Usage: {} <dns|dhcp> <csv.file>".format(sys.argv[0]))
+        print("Usage: {} <dns-fwd|dns-rev|dhcp> <csv.file>".format(
+            sys.argv[0]))
         sys.exit(1)
     with open(sys.argv[2]) as csvfile:
         reader = csv.DictReader(csvfile)
