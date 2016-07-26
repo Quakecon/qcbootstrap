@@ -1,7 +1,10 @@
 global:
   networks:
+    # List of networks to carve up
     - 12.97.0.0/20
   shape:
+    # key is <prefix|column>[_<suffix>]
+    # value is a [<start table>,<end_table>,<tables_per_switch>]
     a:
       - [1, 36, 2]
       - [49, 74, 2]
@@ -12,8 +15,10 @@ global:
       - [49, 74, 2]
     c:
       - [11, 64, 2]
+  # What to carve out for each switch if not specified below
   default_netmask: 27
 tables:
+  # Overrides defaults, currently only supports netmask field
   b13-14b:
     netmask: 28
   b15-16b:
@@ -26,14 +31,3 @@ tables:
     netmask: 28
   b23-24b:
     netmask: 28
-  # b25-25b:
-  #   netmask: 28
-  # b27-28b:
-  #   netmask: 28
-  # b29-30b:
-  #   netmask: 28
-  # b31-32b:
-  #   netmask: 28
-  # b33-34b:
-  #   netmask: 28
-  
