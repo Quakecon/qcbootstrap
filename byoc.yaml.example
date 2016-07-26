@@ -1,0 +1,39 @@
+global:
+  networks:
+    - 12.97.0.0/20
+  shape:
+    a:
+      - [1, 36, 2]
+      - [49, 74, 2]
+    b_a:
+      - [1, 74, 2]
+    b_b:
+      - [1, 36, 2]
+      - [49, 74, 2]
+    c:
+      - [11, 64, 2]
+  default_netmask: 27
+tables:
+  b13-14b:
+    netmask: 28
+  b15-16b:
+    netmask: 28
+  b17-18b:
+    netmask: 28
+  b19-20b:
+    netmask: 28
+  b21-22b:
+    netmask: 28
+  b23-24b:
+    netmask: 28
+  # b25-25b:
+  #   netmask: 28
+  # b27-28b:
+  #   netmask: 28
+  # b29-30b:
+  #   netmask: 28
+  # b31-32b:
+  #   netmask: 28
+  # b33-34b:
+  #   netmask: 28
+  

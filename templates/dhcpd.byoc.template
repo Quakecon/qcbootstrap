@@ -1,4 +1,5 @@
 {% for t in tables %}
+# {{ t.name }}
 subnet {{ t.subnet }}
  netmask {{ t.netmask }} {
    option subnet-mask {{ t.netmask }};

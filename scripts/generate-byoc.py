@@ -3,62 +3,64 @@
 import csv
 import re
 import sys
+import yaml
+
+from netaddr import IPNetwork
 
 from jinja2 import Environment, FileSystemLoader
 env = Environment(loader=FileSystemLoader('templates'))
 
-NETMASK=27
-NAME_FILTER=re.compile('[a-c][0-9]{1,2}-[0-9]{1,2}[ab]?')
-
 class Table:
-    def __init__(self, row, netmask=NETMASK):
-        num_clients=2**(32-netmask)-4
-        self.subnet = row['Internal Subnet']
-        self.name = table_name_filter(row['Table'])
-        self.netmask = bits_to_mask(netmask)
-        self.router = incr_ip(self.subnet)
-        self.range_first = incr_ip(self.router)
-        self.range_last = incr_ip(self.range_first, num_clients)
-
-    def __str__(self):
-        return "{}: {}/{}\n\tRouter: {}\n\tRange: {}-{}".format(
-            self.name,
-            self.subnet, self.netmask,
-            self.router, self.range_first, self.range_last)
-
-def table_name_filter(name):
-    match = NAME_FILTER.search(name.lower())
-    assert match, "No valid table name found in: {}".format(name)
-    return match.group()
-
-def bits_to_mask(mask):
-    maskint = 0
-    for i in range(mask):
-        maskint |= (1 << (31 - i))
-    return "{}.{}.{}.{}".format(
-        maskint >> 24,
-        (maskint >> 16) & 0xFF,
-        (maskint >> 8) & 0xFF,
-        maskint & 0xFF)
-
-def incr_ip(ip_str, num=1):
-    parts = ip_str.split('.')
-    return '.'.join([
-        *parts[:-1],
-        str(int(parts[-1])+num)])
+    def __init__(self, name, network):
+        self.subnet = str(network[0])
+        self.name = name
+        self.netmask = network.netmask
+        self.router = network[1]
+        self.range_first = network[2]
+        self.range_last = network[-2]
 
 if __name__ == "__main__":
     TABLES = []
     if len(sys.argv) != 3:
-        print("Usage: {} <dns-fwd|dns-rev|dhcp> <csv.file>".format(
+        print("Usage: {} <dns-fwd|dns-rev|dhcp> <config.yaml>".format(
             sys.argv[0]))
         sys.exit(1)
-    with open(sys.argv[2]) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row['Table'] and row['Table'] != 'UNUSED':
-                # Start new table
-                TABLES.append(Table(row))
+    configfile = open(sys.argv[2])
+    config = yaml.load(configfile)
+    configfile.close()
+
+    for column, ranges in config['global']['shape'].items():
+        parts = column.split('_')
+        prefix = parts[0]
+        suffix = parts[1] if len(parts) > 1 else ''
+        for r in ranges:
+            for i in range(*r):
+                numeric = '-'.join(
+                    [str(j) for j in range(i, i+r[2])])
+                name = prefix + numeric + suffix
+                netmask=config['global']['default_netmask']
+                if (name in config['tables'] and
+                    'netmask' in config['tables'][name]):
+                    netmask=config['tables'][name]['netmask']
+                TABLES.append((name, netmask))
+    TABLES=sorted(TABLES, key=lambda tup: tup[1])
+
+    target_subnets=[]
+    for network in config['global']['networks']:
+        target_subnets += IPNetwork(network).subnet(
+            config['global']['default_netmask'])
+    for i in range(len(TABLES)):
+        table = TABLES[i]
+        network=target_subnets.pop(0)
+        assert network.prefixlen <= table[1], """
+Table {} has a larger netmask than packing algorithm can handle.
+ Try increasing default_subnet.""".format(table[0])
+        if network.prefixlen == table[1]:
+            TABLES[i] = Table(table[0], network)
+            continue
+        networks = list(network.subnet(table[1]))
+        TABLES[i] = Table(table[0], networks[0])
+        target_subnets = networks[1:] + target_subnets
 
     if sys.argv[1] == "dns-fwd":
         template = env.get_template('db.at.quakecon.org.template')
