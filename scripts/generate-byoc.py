@@ -19,8 +19,31 @@ class Table:
         self.range_first = network[2]
         self.range_last = network[-2]
 
+def reserve_network(network_list, network):
+    """Removes network from list, if it's a subnet, split the super net
+       and re-add remaining subnets
+    """
+    for target_net in network_list:
+        print(target_net)
+        if network == target_net:
+            network_list.remove(target_network)
+            break
+        if network.prefixlen > target_net.prefixlen:
+            target_subs = list(target_net.subnet(network.prefixlen))
+            for sub in target_subs:
+                target_net_hit = False
+                if sub == network:
+                    target_net_hit = True
+                    target_subs.remove(sub)
+                if target_net_hit:
+                    network_list.remove(target_net)
+                    network_list+=target_subs
+                    break
+    return sorted(network_list, key=lambda n: n.prefixlen)
+        
 if __name__ == "__main__":
     TABLES = []
+    TABLES_NEED_NETWORK=[]
     if len(sys.argv) != 3:
         print("Usage: {} <dns-fwd|dns-rev|dhcp> <config.yaml>".format(
             sys.argv[0]))
@@ -29,6 +52,12 @@ if __name__ == "__main__":
     config = yaml.load(configfile)
     configfile.close()
 
+    # Build List of Available Networks
+    target_subnets=[]
+    for network in config['global']['networks']:
+        target_subnets += IPNetwork(network).subnet(
+            config['global']['default_netmask'])
+    
     for column, ranges in config['global']['shape'].items():
         parts = column.split('_')
         prefix = parts[0]
@@ -39,27 +68,35 @@ if __name__ == "__main__":
                     [str(j) for j in range(i, i+r[2])])
                 name = prefix + numeric + suffix
                 netmask=config['global']['default_netmask']
-                if (name in config['tables'] and
-                    'netmask' in config['tables'][name]):
-                    netmask=config['tables'][name]['netmask']
-                TABLES.append((name, netmask))
-    TABLES=sorted(TABLES, key=lambda tup: tup[1])
+                if name in config['tables']:
+                    table_config=config['tables'][name]
+                    if 'network' in table_config:
+                        network=IPNetwork(table_config['network'])
+                        print(network)
+                        target_subnets=reserve_network(
+                            target_subnets, network)
+                        TABLES.append(Table(name, network))
+                        continue
+                    elif 'netmask' in config['tables'][name]:
+                        netmask=config['tables'][name]['netmask']
+                TABLES_NEED_NETWORK.append((name, netmask))
+    TABLES_NEED_NETWORK=sorted(TABLES_NEED_NETWORK, key=lambda tup: tup[1])
 
-    target_subnets=[]
-    for network in config['global']['networks']:
-        target_subnets += IPNetwork(network).subnet(
-            config['global']['default_netmask'])
-    for i in range(len(TABLES)):
-        table = TABLES[i]
-        network=target_subnets.pop(0)
+    for i in range(len(TABLES_NEED_NETWORK)):
+        table = TABLES_NEED_NETWORK[i]
+        try:
+            network=target_subnets.pop(0)
+        except:
+            print("Ran out of networks, bailing")
+            sys.exit(3)
         assert network.prefixlen <= table[1], """
 Table {} has a larger netmask than packing algorithm can handle.
- Try increasing default_subnet.""".format(table[0])
+""".format(table[0])
         if network.prefixlen == table[1]:
-            TABLES[i] = Table(table[0], network)
+            TABLES.append(Table(table[0], network))
             continue
         networks = list(network.subnet(table[1]))
-        TABLES[i] = Table(table[0], networks[0])
+        TABLES.append(Table(table[0], networks[0]))
         target_subnets = networks[1:] + target_subnets
 
     if sys.argv[1] == "dns-fwd":
@@ -73,3 +110,4 @@ Table {} has a larger netmask than packing algorithm can handle.
         print("Unknown command: {}".format(sys.argv[1]))
         sys.exit(2)
     print(template.render(tables=TABLES))
+    print("Unused networks: ", target_subnets)

@@ -20,7 +20,7 @@ global:
 tables:
   # Overrides defaults, currently only supports netmask field
   b13-14b:
-    netmask: 28
+    network: 12.97.14.80/28
   b15-16b:
     netmask: 28
   b17-18b:
