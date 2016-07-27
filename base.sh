@@ -16,12 +16,12 @@ function base () {
     (cd $OUTDIR;
      virt-builder ubuntu-16.04 \
 		  --size $SIZE \
-		  --output ${HOSTNAME}.img \
+		  --output ${HOSTNAME}.raw \
 		  --format $IMGFORMAT \
 		  --cache $CACHEDIR \
 		  --arch $ARCH \
 		  --hostname ${HOSTNAME}.at.quakecon.org \
-		  --install "openntpd,vim,iputils-ping,iputils-tracepath,openssh-client" \
+		  --install "openntpd,vim,iputils-ping,iputils-tracepath,openssh-client,policykit-1" \
 		  --timezone "America/Chicago" \
 		  --update \
 		  --root-password disabled \
@@ -32,14 +32,14 @@ function base () {
 		  --run-command 'echo "qcadmin ALL=(ALL) ALL" >> /etc/sudoers' \
 		  --run-command 'echo "qcadmin ALL=(root) NOPASSWD: /bin/systemctl" >> /etc/sudoers' \
 		  --run-command 'echo "qcadmin ALL=(root) NOPASSWD: /bin/journalctl" >> /etc/sudoers' \
-		  --run-command 'echo GRUB_CMDLINE_LINUX_DEFAULT="console=tty0" >> /etc/default/grub' \
+		  --run-command 'echo "GRUB_CMDLINE_LINUX_DEFAULT=\"console=tty0 net.ifnames=0\"" >> /etc/default/grub' \
 		  --run-command 'update-grub' \
 		  --write "/etc/network/interfaces:
 auto lo
 iface lo inet loopback
 
-auto ens3
-iface ens3 inet static
+auto eth0
+iface eth0 inet static
     address ${IPADDRESS}/24
     gateway 172.16.1.1
     dns-nameservers 172.16.1.102 172.16.1.103 172.16.1.104 8.8.8.8
