@@ -18,7 +18,8 @@ global:
   # What to carve out for each switch if not specified below
   default_netmask: 27
 tables:
-  # Overrides defaults, currently only supports netmask field
+  # Overrides defaults, currently only supports netmask *or* network
+  # examples below
   b13-14b:
     network: 12.97.14.80/28
   b15-16b:
