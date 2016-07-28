@@ -17,14 +17,14 @@ BASTION_IP=172.16.1.71
 
 function core {
     base "$1" "$2" \
-	 --install "nsd,git,dnsutils,isc-dhcp-server" \
+	 --install "nsd,dnsutils,isc-dhcp-server" \
 	 --run-command "systemctl enable nsd.service" \
 	 --copy-in ../dhcp:/etc \
 	 --move /etc/dhcp/dhcpd.conf.${1}:/etc/dhcp/dhcpd.conf \
 	 --run-command "chgrp -R qcadmin /etc/dhcp" \
 	 --run-command "systemctl enable isc-dhcp-server.service" \
 	 --run-command "chmod -R g+w /etc/dhcp" \
-	 --copy /home/qcadmin/dhcp/isc-dhcp-server.service:/etc/systemd/system \
+	 --copy-in ../dhcp/isc-dhcp-server.service:/etc/systemd/system \
 	 --run-command 'cat <<EOF > /etc/openntpd/ntpd.conf
 servers pool.ntp.org
 constraints from "https://www.google.com/"
@@ -36,6 +36,8 @@ EOF
 
 function bastion {
     base "tehlinux" "$BASTION_IP" \
+	 --copy-in ../dns/secret.keys:/etc/nsd \
+	 --install "git,nsd,isc-dhcp-server,unbound" \
 	 --run-command "git clone https://github.com/Quakecon/dns.git /home/qcadmin/dns" \
 	 --copy /home/qcadmin/dns/scripts/pre-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
@@ -87,9 +89,6 @@ function recursive_ns {
 	 --run-command 'echo "net.core.wmem_max=4194304" >> /etc/sysctl.conf' \
 	 "${@:3}"
 }
-
-# base dhcp1 $IP_DHCP1 \
-#      --install "dhcpd,git"
 
 if [ $# -eq 0 ]; then
     ssh-keygen -N "" -f id_rsa
