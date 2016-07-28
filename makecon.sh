@@ -10,6 +10,7 @@ IP_CORE2=172.16.1.101
 IP_NS1=172.16.1.102
 IP_NS2=172.16.1.103
 IP_NS3=172.16.1.104
+BASTION_IP=172.16.1.71
 
 # Note: base changes director to IMGDIR, so local paths must be
 # absolute or relative to IMGDIR
@@ -18,12 +19,7 @@ function core {
     base "$1" "$2" \
 	 --install "nsd,git,dnsutils,isc-dhcp-server" \
 	 --run-command "systemctl enable nsd.service" \
-	 --run-command "git clone https://github.com/Quakecon/dhcp.git /home/qcadmin/dhcp" \
-	 --copy /home/qcadmin/dhcp/scripts/pre-commit:/home/qcadmin/dhcp/.git/hooks \
-	 --copy /home/qcadmin/dhcp/scripts/post-commit:/home/qcadmin/dhcp/.git/hooks \
-	 --run-command "chgrp -R qcadmin /home/qcadmin/dhcp" \
-	 --run-command "chmod -R g+w /home/qcadmin/dhcp" \
-	 --run-command "cp /home/qcadmin/dhcp/*.conf* /etc/dhcp" \
+	 --copy-in ../dhcp:/etc \
 	 --move /etc/dhcp/dhcpd.conf.${1}:/etc/dhcp/dhcpd.conf \
 	 --run-command "chgrp -R qcadmin /etc/dhcp" \
 	 --run-command "systemctl enable isc-dhcp-server.service" \
@@ -38,17 +34,26 @@ EOF
 	 "${@:3}"
 }
 
+function bastion {
+    base "tehlinux" "$BASTION_IP" \
+	 --run-command "git clone https://github.com/Quakecon/dns.git /home/qcadmin/dns" \
+	 --copy /home/qcadmin/dns/scripts/pre-commit:/home/qcadmin/dns/.git/hooks \
+	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
+	 --run-command "chgrp -R qcadmin /home/qcadmin/dns" \
+	 --run-command "chmod -R g+w /home/qcadmin/dns" \
+	 --run-command "git clone https://github.com/Quakecon/dhcp.git /home/qcadmin/dhcp" \
+	 --copy /home/qcadmin/dhcp/scripts/pre-commit:/home/qcadmin/dhcp/.git/hooks \
+	 --copy /home/qcadmin/dhcp/scripts/post-commit:/home/qcadmin/dhcp/.git/hooks \
+	 --run-command "chgrp -R qcadmin /home/qcadmin/dhcp" \
+	 --run-command "chmod -R g+w /home/qcadmin/dhcp"
+} 
+
 function core1 {
     # DHCP Primary, DNS Master, NTP Server
     core core1 $IP_CORE1 \
-	  --run-command "git clone https://github.com/Quakecon/dns.git /home/qcadmin/dns" \
-	 --copy /home/qcadmin/dns/scripts/pre-commit:/home/qcadmin/dns/.git/hooks \
-	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy-in ../dns/secret.keys:/etc/nsd \
-	 --run-command "chgrp -R qcadmin /home/qcadmin/dns" \
-	 --run-command "chmod -R g+w /home/qcadmin/dns" \
-	 --copy /home/qcadmin/dns/zones:/etc/nsd \
-	 --copy /home/qcadmin/dns/nsd.conf.master:/etc/nsd \
+	 --copy-in ../dns/zones:/etc/nsd \
+	 --copy-in ../dns/nsd.conf.master:/etc/nsd \
 	 --move /etc/nsd/nsd.conf.master:/etc/nsd/nsd.conf \
 	 --run-command "chgrp -R qcadmin /etc/nsd" \
 	 --run-command "chmod -R g+w /etc/nsd/zones" \
@@ -95,6 +100,7 @@ if [ $# -eq 0 ]; then
     recursive_ns ns1 $IP_NS1
     recursive_ns ns2 $IP_NS2
     recursive_ns ns3 $IP_NS3
+    bastion
 else
     $@
 fi
