@@ -4,7 +4,7 @@ subnet {{ t.subnet }}
  netmask {{ t.netmask }} {
    option subnet-mask {{ t.netmask }};
    option routers {{ t.router }};
-   option domain-name-servers 172.16.1.102, 172.16.1.103, 172.16.1.104;
+   option domain-name-servers {{ shuffle_dns() }};
    pool {
       failover peer "dhcp-failover";
       range {{ t.range_first }} {{ t.range_last }};

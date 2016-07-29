@@ -1,9 +1,15 @@
 #!/bin/env python
 
 import csv
+import os
+import random
 import re
 import sys
 import yaml
+
+DNS_SERVERS = ["172.16.1.102","172.16.1.103","172.16.1.104"]
+
+random.seed(os.urandom(16))
 
 from netaddr import IPNetwork
 
@@ -39,6 +45,10 @@ def reserve_network(network_list, network):
                     network_list+=target_subs
                     break
     return sorted(network_list, key=lambda n: n.prefixlen)
+
+def randomize_dns_string():
+    random.shuffle(DNS_SERVERS)
+    return ', '.join(DNS_SERVERS)
         
 if __name__ == "__main__":
     TABLES = []
@@ -114,5 +124,6 @@ Table {} has a larger netmask than packing algorithm can handle.
     else:
         print("Unknown command: {}".format(sys.argv[1]))
         sys.exit(2)
-    print(template.render(tables=TABLES))
+    print(template.render(tables=TABLES,
+                          shuffle_dns=randomize_dns_string))
     #print("Unused networks: ", target_subnets)
