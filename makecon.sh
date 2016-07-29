@@ -17,9 +17,14 @@ BASTION_IP=172.16.1.71
 
 function core {
     base "$1" "$2" \
-	 --install "nsd,dnsutils,isc-dhcp-server" \
+	 --install "nsd,dnsutils,isc-dhcp-server,python-twisted" \
+	 --install "libcgi-pm-perl" \
 	 --run-command "systemctl enable nsd.service" \
 	 --copy-in ../dhcp:/etc \
+	 --copy-in ../3rdparty/dhcpstatus:/usr/local \
+	 --move /etc/dhcp/dhcpstatus.py:/usr/local \
+	 --move /etc/dhcp/dhcpstatus.service:/etc/systemd/system \
+	 --run-command "systemctl enable dhcpstatus.service" \
 	 --move /etc/dhcp/dhcpd.conf.${1}:/etc/dhcp/dhcpd.conf \
 	 --run-command "chgrp -R qcadmin /etc/dhcp" \
 	 --run-command "systemctl enable isc-dhcp-server.service" \
