@@ -36,8 +36,8 @@ EOF
 
 function bastion {
     base "tehlinux" "$BASTION_IP" \
-	 --copy-in ../dns/secret.keys:/etc/nsd \
 	 --install "git,nsd,isc-dhcp-server,unbound" \
+	 --copy-in ../dns/secret.keys:/etc/nsd \
 	 --run-command "git clone https://github.com/Quakecon/dns.git /home/qcadmin/dns" \
 	 --copy /home/qcadmin/dns/scripts/pre-commit:/home/qcadmin/dns/.git/hooks \
 	 --copy /home/qcadmin/dns/scripts/post-commit:/home/qcadmin/dns/.git/hooks \
