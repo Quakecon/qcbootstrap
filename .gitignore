@@ -3,3 +3,5 @@ dns.old
 images/*.img
 images/*.raw
 id_rsa*
+.env
+authorized_keys
