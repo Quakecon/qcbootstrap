@@ -22,6 +22,7 @@ function core {
 	 --run-command "systemctl enable nsd.service" \
 	 --copy-in ../dhcp:/etc \
 	 --copy-in ../3rdparty/dhcpstatus:/usr/local \
+	 --run-command "ln -s /etc/dhcp/dhcpd.conf* /usr/local/dhcpstatus/scripts"
 	 --move /etc/dhcp/dhcpstatus.py:/usr/local \
 	 --move /etc/dhcp/dhcpstatus.service:/etc/systemd/system \
 	 --run-command "systemctl enable dhcpstatus.service" \
