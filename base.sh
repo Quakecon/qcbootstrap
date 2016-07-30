@@ -21,7 +21,8 @@ function base () {
 		  --cache $CACHEDIR \
 		  --arch $ARCH \
 		  --hostname ${HOSTNAME}.at.quakecon.org \
-		  --install "openntpd,vim,iputils-ping,iputils-tracepath,openssh-client,policykit-1" \
+		  --install "openntpd,vim,iputils-ping,iputils-tracepath" \
+		  --install "openssh-client,policykit-1,tcpdump" \
 		  --timezone "America/Chicago" \
 		  --update \
 		  --root-password disabled \

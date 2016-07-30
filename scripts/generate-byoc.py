@@ -8,6 +8,7 @@ import sys
 import yaml
 
 DNS_SERVERS = ["172.16.1.102","172.16.1.103","172.16.1.104"]
+NAME_FILTER=re.compile('([a-z]*)[0-9]*-[0-9]*([a-z]?)')
 
 random.seed(os.urandom(16))
 
@@ -24,6 +25,12 @@ class Table:
         self.router = network[1]
         self.range_first = network[2]
         self.range_last = network[-2]
+        self.prefix, self.suffix = NAME_FILTER.match(
+            self.name).groups()
+
+    @property
+    def sort_hash(self):
+        return self.prefix + self.suffix
 
 def reserve_network(network_list, network):
     """Removes network from list, if it's a subnet, split the super net

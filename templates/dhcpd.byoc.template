@@ -1,7 +1,7 @@
-{% for t in tables %}
-# {{ t.name }}
+{% for t in tables|sort(attribute='sort_hash') %}
 subnet {{ t.subnet }}
  netmask {{ t.netmask }} {
+   #${{ t.name }}
    option subnet-mask {{ t.netmask }};
    option routers {{ t.router }};
    option domain-name-servers {{ shuffle_dns() }};
