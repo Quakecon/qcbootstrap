@@ -96,6 +96,18 @@ function recursive_ns {
 	 "${@:3}"
 }
 
+function web1 {
+    base web1 172.16.1.109 \
+	 --size 400G \
+	 --install "rsync" \
+	 --run-command "useradd -m demos -s /bin/bash" \
+	 --ssh-inject demos:file:../demos_rsa.pub \
+	 --run-command 'chown -R demos:demos /home/qcadmin/.ssh' \
+	 --mkdir /home/demos/quakelive \
+	 --mkdir /home/demos/quakeworld
+}
+    
+
 if [ $# -eq 0 ]; then
     ssh-keygen -N "" -f id_rsa
     cat id_rsa.pub authorized_keys.template > authorized_keys
